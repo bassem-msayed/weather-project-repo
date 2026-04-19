@@ -17,7 +17,7 @@ joined as (
         d.temp_max
     from daily d
     left join cities c
-        on d.locationid = c.locationid
+        on d.location_id = c.location_id
 )
 
 select * from joined
