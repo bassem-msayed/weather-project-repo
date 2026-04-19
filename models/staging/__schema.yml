@@ -9,7 +9,10 @@ models:
       - name: date
         data_tests:
           - not_null
-      - name: temp_max_c
+      - name: temp_max
+        data_tests:
+          - not_null
+      - name: temp_min
         data_tests:
           - not_null
 
