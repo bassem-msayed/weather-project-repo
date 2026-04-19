@@ -1,3 +1,27 @@
 version: 2
 
 models:
+  - name: stg_meteo__daily
+    columns:
+      - name: location_id
+        data_tests:
+          - not_null
+      - name: date
+        data_tests:
+          - not_null
+      - name: temp_max_c
+        data_tests:
+          - not_null
+
+  - name: stg_meteo__cities
+    columns:
+      - name: location_id
+        data_tests:
+          - not_null
+          - unique
+      - name: city_name
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Glasgow', 'Dubai', 'Cairo']
