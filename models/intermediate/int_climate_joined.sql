@@ -1,8 +1,8 @@
 with cities as (
-    select * from {{ ref('stg_cities') }}
+    select * from {{ ref('stg_meteo__cities') }}
 ),
 daily as (
-    select * from {{ ref('stg_meteo_daily') }}
+    select * from {{ ref('stg_meteo__daily') }}
 ),
 joined as (
     select
