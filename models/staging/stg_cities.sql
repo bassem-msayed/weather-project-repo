@@ -1,18 +1,18 @@
 with source as(
     select * 
-    from {{ ref('dim_city') }}
+    from {{ source('meteo_raw', 'dim_city') }}
 ),
 renamed as(
     select
-        cast(loction_id as integer) as location_id,
-        cast(latitude as float)     as latitude,
-        cast(longitude as float)    as longitude,
-        cast(elevation as float)    as elevation,
+        cast(location_id as integer)    as location_id,
+        cast(latitude as float64)       as latitude,
+        cast(longitude as float64)      as longitude,
+        cast(elevation as float64)      as elevation,
         case 
-            when (cast(latitude as float) = 55.75 and cast(longitude as float) = -4.25) then 'Glasgow'
-            else when (cast(latitude as float) = 25 and cast(longitude as float) = 55.25) then 'Dubai'
-            else when (cast(latitude as float) = 30 and cast(longitude as float) = 31.25) then 'Cairo'
-            end                     as city_name
+            when (cast(latitude as float64) = 55.75 and cast(longitude as float) = -4.25)   then 'Glasgow'
+            when (cast(latitude as float64) = 25 and cast(longitude as float) = 55.25)      then 'Dubai'
+            when (cast(latitude as float64) = 30 and cast(longitude as float) = 31.25)      then 'Cairo'
+            end                         as city_name
     from source
 )
 select * from renamed
