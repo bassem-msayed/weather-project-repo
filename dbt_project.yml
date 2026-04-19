@@ -36,8 +36,8 @@ clean-targets: # directories to be removed by `dbt clean`
 models:
   Weather_Project_dbt:
     staging:
-      + materialized: view
+      +materialized: view
     intermediate:
-      + materialized: view
+      +materialized: view
     marts:
-      + materialized: table
+      +materialized: table
