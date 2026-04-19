@@ -5,12 +5,12 @@ annual as (
     select
         city_name,
         year_num,
-        avg(temp_max) as avg_temp_max,
-        avg(temp_min) as avg_temp_min,
-        avg(solar_radiation_mj) as avg_solar_radiation_mj,
-        avg(precipitation_mm) as avg_precipcation_mm,
-        avg(evapotranspiration_mm) as avg_evapotranspiration_mm,
-        avg(precipitation_mm) - avg(evapotranspiration_mm) as water_deficit_mm,
+        round(avg(temp_max),2)                                      as avg_temp_max,
+        round(avg(temp_min),2)                                      as avg_temp_min,
+        round(avg(solar_radiation_mj),2)                            as avg_solar_radiation_mj,
+        round(avg(precipitation_mm),2)                              as avg_precipcation_mm,
+        round(avg(evapotranspiration_mm),2)                         as avg_evapotranspiration_mm,
+        round(avg(precipitation_mm) - avg(evapotranspiration_mm),2) as water_deficit_mm,
     from base
     group by city_name, year_num
 )
