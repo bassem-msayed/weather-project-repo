@@ -12,7 +12,7 @@ annual as (
         avg(evapotranspiration_mm) as avg_evapotranspiration_mm,
         avg(precipitation_mm) - avg(evapotranspiration_mm) as water_deficit_mm,
     from base
+    group by city_name, year_num
 )
 select * 
 from annual
-group by city_name, year_num
