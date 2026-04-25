@@ -5,7 +5,7 @@ annual as (
     select
         city_name,
         year_num,
-        floor(year_num / 10) *10                                    as decade,
+        cast(floor(year_num / 10) *10 as int64)                     as decade,
         round(avg(temp_max),2)                                      as avg_temp_max,
         round(avg(temp_min),2)                                      as avg_temp_min,
         round(avg( (temp_max + temp_min)/2), 2)                     as avg_temp_mean,
