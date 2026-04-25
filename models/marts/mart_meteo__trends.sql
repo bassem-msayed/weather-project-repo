@@ -8,7 +8,7 @@ annual as (
         floor(year_num / 10) *10                                    as decade,
         round(avg(temp_max),2)                                      as avg_temp_max,
         round(avg(temp_min),2)                                      as avg_temp_min,
-        round(avg( (temp_max + temp_min)/2, 2)                      as avg_temp_mean,
+        round(avg( (temp_max + temp_min)/2), 2)                     as avg_temp_mean,
         round(avg(solar_radiation_mj),2)                            as avg_solar_radiation_mj,
         round(avg(precipitation_mm),2)                              as avg_precipcation_mm,
         round(avg(evapotranspiration_mm),2)                         as avg_evapotranspiration_mm,
@@ -44,9 +44,8 @@ with_windows as(
             partition by city_name, decade)                 as decade_avg_temp
 
     from annual
-    group by city_name, year_num
 ),
-with flags as (
+with_flags as (
     select 
     *,
 
@@ -64,8 +63,7 @@ with flags as (
         else false
     end                                                     as exceeds_1_5c_threshold
 
-    from annual
-    group by city_name, year_num
+    from with_windows
 )
 
-select * from flags
+select * from with_flags
