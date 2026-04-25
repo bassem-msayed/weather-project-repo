@@ -75,6 +75,8 @@ sources (BigQuery External Tables)
                 │
                 └── mart_meteo__trends  (table) — annual aggregations + window functions
 ```
+![dbt Architucture](tableau/dashboard_preview.png)
+
 
 **dbt project:** `Weather_Project_dbt`  
 **BigQuery project:** `meteo-historical-project`  
