@@ -20,28 +20,28 @@ with_windows as(
     select
         *,
         -- Rolling 10 years average temprature
-        avg(avg_temp_mean) over(
+        round(avg(avg_temp_mean) over(
             partition by city_name
             order by year_num
-            rows between 9 preceding and current row)       as rolling_10yr_avg_temp,
+            rows between 9 preceding and current row) ,2)       as rolling_10yr_avg_temp,
         
         -- Previous year temperature & YoY delta
         lag(avg_temp_mean) over(
             partition by city_name
-            order by year_num)                              as prev_year_avg_temp,
+            order by year_num)                                  as prev_year_avg_temp,
         
-        avg_temp_mean - lag(avg_temp_mean) over (
+        round(avg_temp_mean - lag(avg_temp_mean) over (
                             partition by city_name 
-                            order by year_num)              as yoy_temp_delta,
+                            order by year_num) ,2)              as yoy_temp_delta,
         
         -- Hotest year rank per city
         rank() over(
             partition by city_name
-            order by avg_temp_mean desc)                    as hottest_year_rank,
+            order by avg_temp_mean desc)                        as hottest_year_rank,
         
         -- Decade aveage temp by city
         avg(avg_temp_mean) over(
-            partition by city_name, decade)                 as decade_avg_temp
+            partition by city_name, decade)                     as decade_avg_temp
 
     from annual
 ),
