@@ -10,7 +10,7 @@ annual as (
         round(avg(temp_min),2)                                      as avg_temp_min,
         round(avg( (temp_max + temp_min)/2), 2)                     as avg_temp_mean,
         round(avg(solar_radiation_mj),2)                            as avg_solar_radiation_mj,
-        round(avg(precipitation_mm),2)                              as avg_precipcation_mm,
+        round(avg(precipitation_mm),2)                              as avg_precipitation_mm,
         round(avg(evapotranspiration_mm),2)                         as avg_evapotranspiration_mm,
         round(avg(precipitation_mm) - avg(evapotranspiration_mm),2) as water_deficit_mm
     from base
@@ -18,8 +18,19 @@ annual as (
 ),
 with_windows as(
     select
-        *,
-        -- Rolling 10 years average temprature
+        -- All base columns
+        city_name,
+        year_num,
+        decade,
+        avg_temp_max,
+        avg_temp_min,
+        avg_temp_mean,
+        avg_solar_radiation_mj,
+        avg_precipitation_mm,
+        avg_evapotranspiration_mm,
+        water_deficit_mm,
+
+        -- Rolling 10 years average temperature
         round(avg(avg_temp_mean) over(
             partition by city_name
             order by year_num
@@ -39,7 +50,7 @@ with_windows as(
             partition by city_name
             order by avg_temp_mean desc)                        as hottest_year_rank,
         
-        -- Decade aveage temp by city
+        -- Decade average temp by city
         avg(avg_temp_mean) over(
             partition by city_name, decade)                     as decade_avg_temp
 
@@ -47,7 +58,25 @@ with_windows as(
 ),
 with_flags as (
     select 
-    *,
+        -- All base columns
+        city_name,
+        year_num,
+        decade,
+        avg_temp_max,
+        avg_temp_min,
+        avg_temp_mean,
+        avg_solar_radiation_mj,
+        avg_precipitation_mm,
+        avg_evapotranspiration_mm,
+        water_deficit_mm,
+
+        -- All window columns
+        rolling_10yr_avg_temp,
+        prev_year_avg_temp,
+        yoy_temp_delta,
+        hottest_year_rank,
+        decade_avg_temp,
+
 
     -- baseline: 1940, decade average by city
     first_value(decade_avg_temp) over(
@@ -55,13 +84,15 @@ with_flags as (
         order by decade)                                    as baseline_decade_avg,
     
     -- 1.5 degree Paris Agreement flag
-    case 
-        when decade_avg_temp - first_value(decade_avg_temp) over(
-                                            partition by city_name
-                                            order by decade)
-            >= 1.5 then true
-        else false
-    end                                                     as exceeds_1_5c_threshold
+    cast(
+        case 
+            when decade_avg_temp - first_value(decade_avg_temp) over(
+                                                partition by city_name
+                                                order by decade)
+                >= 1.5 then true
+            else false
+        end
+    as bool)                                                as exceeds_1_5c_threshold
 
     from with_windows
 )

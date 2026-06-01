@@ -58,7 +58,6 @@ https://open-meteo.com/
 > **Data quality notes:**
 > - ~50 null date records excluded in staging (trailing CSV artifacts)
 > - NaN float values in early ERA5 records handled via BigQuery `SAFE_CAST`
-
 ---
 
 ## dbt Architecture
@@ -111,7 +110,7 @@ sources (BigQuery External Tables)
 | `avg_temp_min` | `ROUND(AVG(temp_min), 2)` |
 | `avg_temp_mean` | `ROUND(AVG((temp_max + temp_min) / 2), 2)` |
 | `avg_solar_radiation_mj` | `ROUND(AVG(solar_radiation_mj), 2)` |
-| `avg_precipcation_mm` | `ROUND(AVG(precipitation_mm), 2)` |
+| `avg_precipitation_mm` | `ROUND(AVG(precipitation_mm), 2)` |
 | `avg_evapotranspiration_mm` | `ROUND(AVG(evapotranspiration_mm), 2)` |
 | `water_deficit_mm` | `AVG(precipitation_mm) - AVG(evapotranspiration_mm)` |
 | `decade` | `CAST(FLOOR(year_num / 10) * 10 AS INT64)` |
@@ -132,15 +131,24 @@ sources (BigQuery External Tables)
 
 ## dbt Tests
 
+### Generic tests
 ```yaml
 stg_meteo__daily:
-  - location_id: not_null
-  - date: not_null
-  - temp_max: not_null
+ - location_id: not_null
+ - date: not_null
+ - temp_max: not_null
+ - temp_min: not_null
 
 stg_meteo__cities:
   - location_id: not_null, unique
   - city_name: not_null, accepted_values ['Glasgow', 'Dubai', 'Cairo']
+
+mart_meteo__trends:
+ - city_name: not_null, accepted_values: ['Glasgow', 'Dubai', 'Cairo']
+ - exceeds_1_5c_threshold: not_null
+
+Custom test:
+ - assert_min_temp_not_exceed_max_temp: "Asserts that temp_min never exceeds temp_max for any daily record. Catches upstream data quality issues before they propagate into annual aggregations."
 ```
 
 ---
@@ -162,17 +170,23 @@ stg_meteo__cities:
 weather-project-repo/
 ├── models/
 │   ├── staging/
+│   │   ├── __sources.yml
+│   │   ├── __schema.yml
 │   │   ├── stg_meteo__daily.sql
-│   │   ├── stg_meteo__cities.sql
-│   │   ├── sources.yml
-│   │   └── schema.yml
+│   │   └── stg_meteo__cities.sql
 │   ├── intermediate/
+│   │   ├── __schema.yml
 │   │   └── int_meteo__joined.sql
 │   └── marts/
-│       └── mart_meteo__trends.sql
+│       ├── __schema.yml
+│       ├── mart_meteo__trends.sql
+├── tests/
+│   └── assert_min_temp_not_exceed_max_temp.sql
 ├── tableau/
-│   └── Climate Drift Dashboard.twbx
-├── dbt_project.yml
+│   ├── Climate Drift Dashboard.twbx
+│   ├── dashboard_preview.png
+│   └── dbt_architicture_weather_project.png
+├── PLAN.md
 └── README.md
 ```
 

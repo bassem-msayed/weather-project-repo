@@ -1,0 +1,76 @@
+models:
+  - name: mart_meteo__trends
+    description: "Model calculating weather trends over the years & decadses, including temperature changes, solar radiation, precipitation, and water deficit."
+
+    columns:
+      - name: city_name
+        description: "Name of the city, we only ran this simulation for 3 citites: Glasgow, Dubai, and Cairo"
+        data_type: "string"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Glasgow", "Dubai", "Cairo"]
+      
+      - name: year_num
+        description: "Year of the observation"
+      
+      - name: decade
+        description: "Decade of the observation"
+      
+      - name: avg_temp_max
+        description: "Average maximum temperature for the year"
+        data_type: "float"
+      
+      - name: avg_temp_min
+        description: "Average minimum temperature for the year"
+        data_type: "float"
+      
+      - name: avg_temp_mean
+        description: "Average mean temperature for the year"
+        data_type: "float"
+      
+      - name: avg_solar_radiation_mj
+        description: "Average solar radiation in megajoules for the year"
+        data_type: "float"
+      
+      - name: avg_precipitation_mm
+        description: "Average precipitation in millimeters for the year"
+        data_type: "float"
+      
+      - name: avg_evapotranspiration_mm
+        description: "Average evapotranspiration in millimeters for the year"
+        data_type: "float"
+      
+      - name: water_deficit_mm
+        description: "Water deficit in millimeters for the year"
+        data_type: "float"
+      
+      - name: rolling_10yr_avg_temp
+        description: "Rolling 10-year average temperature"
+        data_type: "float"
+      
+      - name: prev_year_avg_temp
+        description: "Average temperature of the previous year"
+        data_type: "float"
+      
+      - name: yoy_temp_delta
+        description: "Year-over-year temperature change"
+        data_type: "float"
+      
+      - name: hottest_year_rank
+        description: "Rank of the year in terms of hottest temperatures"
+      
+      - name: decade_avg_temp
+        description: "Average temperature for the decade"
+        data_type: "float"
+      
+      - name: baseline_decade_avg
+        description: "Baseline average temperature for the decade (e.g., 1940-1950)"
+        data_type: "float"
+      
+      - name: exceeds_1_5c_threshold
+        description: "Boolean indicating if the year exceeds the 1.5°C threshold compared to the baseline decade average"
+        data_type: "boolean"
+        data_tests:
+          - not_null
