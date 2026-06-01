@@ -145,7 +145,7 @@ stg_meteo__cities:
 
 mart_meteo__trends:
  - city_name: not_null, accepted_values: ['Glasgow', 'Dubai', 'Cairo']
- - exceeds_1_5c_threshold: not_null
+ - exceeds_1_5c_threshold: not_null, accepted_values: [true, false]
 
 Custom test:
  - assert_min_temp_not_exceed_max_temp: "Asserts that temp_min never exceeds temp_max for any daily record. Catches upstream data quality issues before they propagate into annual aggregations."

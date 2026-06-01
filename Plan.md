@@ -105,7 +105,7 @@ sources (BigQuery External Tables)
 **Generic:**
 - `not_null` on key columns in staging and mart
 - `unique` on `location_id` in cities staging
-- `accepted_values` for city name
+- `accepted_values` for city name and the threshold flag
 
 **Custom:**
 - Assert that minimum temperature never exceeds maximum temperature for any record

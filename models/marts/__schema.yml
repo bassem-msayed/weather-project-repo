@@ -74,3 +74,6 @@ models:
         data_type: "boolean"
         data_tests:
           - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
