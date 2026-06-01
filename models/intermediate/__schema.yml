@@ -1,0 +1,38 @@
+models:
+  - name: int_meteo__joined
+    description: "Model joining the cities data with the daily data"
+    columns:
+      - name: city_name
+        description: "Name of the city"
+        data_tests:
+          - not_null
+
+      - name: date
+        description: "Date of the weather observation"
+        data_tests:
+          - not_null
+
+      - name: year_num
+        description: "Year of the weather observation"
+
+      - name: month_num
+        description: "Month of the weather observation"
+
+      - name: precipitation_mm
+        description: "Precipitation in millimeters"
+
+      - name: solar_radiation_mj
+        description: "Solar radiation in megajoules"
+
+      - name: evapotranspiration_mm
+        description: "Evapotranspiration in millimeters"
+
+      - name: temp_max
+        description: "Maximum temperature in degrees Celsius"
+        data_tests:
+          - not_null
+
+      - name: temp_min
+        description: "Minimum temperature in degrees Celsius"
+        data_tests:
+          - not_null
