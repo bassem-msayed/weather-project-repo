@@ -1,3 +1,4 @@
+-- This staging model reads directly from the dim city CSV file in seeds folder.
 with source as (
     select * from {{ ref('dim_city') }}
 ),

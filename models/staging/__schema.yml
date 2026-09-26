@@ -2,6 +2,7 @@ version: 2
 
 models:
   - name: stg_meteo__daily
+    description: "Staging model for daily weather data from Open Meteo API, deduplicated and cleaned for further analysis, after the dumb data dump"
     columns:
       - name: location_id
         data_tests:
