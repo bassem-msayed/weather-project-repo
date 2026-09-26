@@ -114,5 +114,13 @@ def run_weekly_refresh():
     print(f"[SUCCESS] Appended {len(df)} rows.")
     print(f"[SUCCESS] Total table size now in BigQuery: {table.num_rows:,} rows.")
 
+    # ==========================================================================
+    # SANDBOX WORKAROUND: Reset table expiration clock
+    # ==========================================================================
+    new_expiration = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=59)
+    table.expires = new_expiration
+    client.update_table(table, ["expires"])
+    print(f"[SUCCESS] BigQuery Sandbox expiration extended to: {new_expiration.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+
 if __name__ == "__main__":
     run_weekly_refresh()
