@@ -4,3 +4,8 @@ target/
 dbt_packages/
 logs/
 dbt_internal_packages/
+
+# Credentials and Environment files
+.env
+*.json
+keys/
