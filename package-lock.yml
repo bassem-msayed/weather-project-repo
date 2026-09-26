@@ -1,8 +1,6 @@
 packages:
-- git: https://github.com/dbt-labs/dbt-codegen.git
-  name: codegen
-  revision: f5ec206be9d0ceb23fc9b48a2041539f2fac53fc
-- package: dbt-labs/dbt_utils
-  name: dbt_utils
-  version: 1.3.3
-sha1_hash: 288ea0402a64a80af92ac664bfbc6ed2a31d6dcf
+  - git: https://github.com/dbt-labs/dbt-codegen.git
+    revision: f5ec206be9d0ceb23fc9b48a2041539f2fac53fc
+  - package: dbt-labs/dbt_utils
+    version: 1.4.1
+sha1_hash: c6d3b7a4be72971d634e9e2e8e614ab70ef0978a
