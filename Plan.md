@@ -2,7 +2,8 @@
 
 **Status:** Pre-development  
 **Planned start:** April 19, 2025  
-**Planned timeline:** 1 week  
+**Planned timeline:** 1-2 week(s)  
+**Project enhancements:** 5-6 months and check automation opportunities  
 **Author:** Bassem Sayed
 
 ---
@@ -26,7 +27,7 @@ If all three have crossed 1.5°C above their historical baseline, that's not a r
 ## Data Source
 
 **Open-Meteo Historical Weather API — ERA5 Reanalysis Model**  
-https://open-meteo.com/
+[Open Meteo Website](https://open-meteo.com/)
 
 ERA5 reconstructs historical weather back to 1940 using observational data and atmospheric modeling. It's free, API-accessible, well-documented, and covers the full date range I need.
 
@@ -36,7 +37,7 @@ ERA5 reconstructs historical weather back to 1940 using observational data and a
 **Variables:**
 
 | Variable | Unit | Why I'm including it |
-|---|---|---|
+ | --- | --- | --- |
 | `temperature_2m_max` | °C | Primary metric — daily high |
 | `temperature_2m_min` | °C | Primary metric — daily low |
 | `precipitation_sum` | mm | Water balance |
@@ -63,18 +64,19 @@ How has the gap between precipitation and evapotranspiration shifted over time �
 ## Stack
 
 | Layer | Tool |
-|---|---|
+ | --- | --- |
 | Source | Open-Meteo API → CSV → Google Drive |
 | Warehouse | BigQuery External Table |
 | Transformation | dbt Cloud + VS Code |
 | Version control | Git + GitHub |
 | Visualization | Tableau Desktop |
+| Automation | Python scripts + Prospect usage of GitHub actions for Automated data flow and Continous Integration |
 
 ---
 
 ## Planned Architecture
 
-```
+```text
 sources (BigQuery External Tables)
     └── stg_meteo__daily       — cast types, handle nulls and NaN values
     └── stg_meteo__cities      — derive city name from coordinates
@@ -91,7 +93,7 @@ sources (BigQuery External Tables)
 **Planned window functions:**
 
 | Function | Purpose |
-|---|---|
+ | --- | --- |
 | 10-year rolling average | Smooth out annual noise to surface the real trend |
 | Decade average per city | Measure warming at the scale the Paris Agreement actually uses |
 | FIRST_VALUE for 1940s baseline | Anchor everything to a consistent starting point |
@@ -103,27 +105,32 @@ sources (BigQuery External Tables)
 ## Planned Tests
 
 **Generic:**
+
 - `not_null` on key columns in staging and mart
+
 - `unique` on `location_id` in cities staging
+
 - `accepted_values` for city name and the threshold flag
 
 **Custom:**
+
 - Assert that minimum temperature never exceeds maximum temperature for any record
 
 ---
 
 ## Definition of Done
 
-- [ ] Raw data loaded to BigQuery as external table
-- [ ] Staging models clean and tested
-- [ ] Intermediate join validated
-- [ ] Mart produces one row per city per year with all aggregations and window functions
-- [ ] All dbt tests passing
-- [ ] Column descriptions complete across all models
-- [ ] Tableau dashboard built and ready to share
-- [ ] README written with findings backed by model output
-- [ ] Scheduled job configured and confirmed in dbt Cloud
-- [ ] Repository pushed to GitHub with clean commit history
+- [x] Raw data loaded to BigQuery as external table
+- [x] Staging models clean and tested
+- [x] Intermediate join validated
+- [x] Mart produces one row per city per year with all aggregations and window functions
+- [x] All dbt tests passing
+- [x] Column descriptions complete across all models
+- [x] Tableau dashboard built and ready to share
+- [x] README written with findings backed by model output
+- [x] Scheduled job configured and confirmed in dbt Cloud
+- [x] Repository pushed to GitHub with clean commit history
+- [x] Fastforwad 6 months of project initiation & investigate addition of API ingestion
 
 ---
 

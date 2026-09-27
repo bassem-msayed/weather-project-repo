@@ -2,26 +2,30 @@
 
 > *"2023 and 2024 averaged 1.5°C above pre-industrial levels. That's not the threshold breach — the Paris Agreement measures it over 20–30 year averages. So I built a pipeline to check it properly."*
 >
-> Inspired by: [Why 1.5 Degrees is Backed by Science](https://www.youtube.com/watch?v=V6n3X2CkVkg)
+> Inspired by: [Why 1.5 Degrees is Backed by Science on YouTube](https://www.youtube.com/watch?v=V6n3X2CkVkg)
 
 ---
 
 ## Project Overview
 
-An end-to-end ELT analytics pipeline ingesting 85 years of real daily climate data across three cities on three continents — Cairo, Dubai, and Glasgow — to surface evidence of long-term climate drift.
+An end-to-end ELT analytics pipeline ingesting +85 years of real daily climate data across three cities on three continents — Cairo, Dubai, and Glasgow — to surface evidence of long-term climate drift.
 
-These are cities I've lived and worked in. The data tells the story better than memory does.
+These are cities I've lived and/or worked in. The data tells the story better than memory does.
 
 ---
 
 ## Dashboard
 
-![Climate Drift Dashboard](tableau/dashboard_preview.png)
+![Climate Drift Dashboard](tableau/dashboard_preview2.png)
 
 **Key findings:**
-- Average temperature across all three cities rose **2.2°C** between 1940 and 2025
+
+- Average temperature across all three cities rose **2.2°C** between 1940 and 2025.
+
 - Cairo and Dubai crossed the **1.5°C Paris Agreement threshold** in the 2010s
+
 - **All top 10 hottest years** for Cairo and Dubai occurred after 2010
+
 - Glasgow maintains a **water surplus** while Cairo and Dubai face chronic and deepening water deficit
 
 ---
@@ -29,7 +33,7 @@ These are cities I've lived and worked in. The data tells the story better than 
 ## Stack
 
 | Layer | Tool |
-|---|---|
+ | --- | --- |
 | Source | Open-Meteo Historical API — ERA5 Reanalysis Model |
 | File Storage | Google Drive |
 | Warehouse | BigQuery External Table (EU region) |
@@ -42,27 +46,30 @@ These are cities I've lived and worked in. The data tells the story better than 
 ## Data Source
 
 **Open-Meteo Historical Weather API — ERA5 model**
-https://open-meteo.com/
+ [Open Meteo](https://open-meteo.com/)
 
 - Date range: 1940–2025 (~85 years, ~95,000 daily records)
 - Cities: Cairo · Dubai · Glasgow
 
 | Variable | Unit | Description |
-|---|---|---|
+ | --- | --- | --- |
 | `temperature_2m_max` | °C | Daily maximum temperature |
 | `temperature_2m_min` | °C | Daily minimum temperature |
 | `et0_fao_evapotranspiration` | mm | FAO reference evapotranspiration |
 | `shortwave_radiation_sum` | MJ/m² | Daily solar energy received |
 | `precipitation_sum` | mm | Total daily precipitation |
 
-> **Data quality notes:**
-> - ~50 null date records excluded in staging (trailing CSV artifacts)
-> - NaN float values in early ERA5 records handled via BigQuery `SAFE_CAST`
+**Data quality notes:**
+
+- ~50 null date records excluded in staging (trailing CSV artifacts)
+
+- NaN float values in early ERA5 records handled via BigQuery `SAFE_CAST`
+
 ---
 
 ## dbt Architecture
 
-```
+```text
 sources (BigQuery External Tables)
     fct_open_meteo_historical_data
     dim_city
@@ -74,8 +81,8 @@ sources (BigQuery External Tables)
                 │
                 └── mart_meteo__trends  (table) — annual aggregations + window functions
 ```
-![dbt Architucture](tableau/dbt_architicture_weather_project.png)
 
+![dbt Architucture](tableau/dbt_architicture_weather_project.png)
 
 **dbt project:** `Weather_Project_dbt`  
 **BigQuery project:** `meteo-historical-project`  
@@ -86,16 +93,19 @@ sources (BigQuery External Tables)
 ## Model Details
 
 ### `stg_meteo__daily`
+
 - Casts raw source columns to correct BigQuery types
 - Applies `SAFE_CAST` to handle NaN float values in evapotranspiration, solar radiation, and precipitation
 - Filters records where `time IS NULL`
 - Aliases auto-detected column names to clean snake_case
 
 ### `stg_meteo__cities`
+
 - Derives `city_name` from latitude value using `CASE` logic
 - Casts lat/lon/elevation to `FLOAT64`
 
 ### `int_meteo__joined`
+
 - Left joins daily records to city dimension on `location_id`
 - Extracts `year_num` and `month_num` from date
 - Selects only columns needed downstream
@@ -105,7 +115,7 @@ sources (BigQuery External Tables)
 **Annual aggregations grouped by city and year:**
 
 | Column | Logic |
-|---|---|
+ | --- | --- |
 | `avg_temp_max` | `ROUND(AVG(temp_max), 2)` |
 | `avg_temp_min` | `ROUND(AVG(temp_min), 2)` |
 | `avg_temp_mean` | `ROUND(AVG((temp_max + temp_min) / 2), 2)` |
@@ -118,7 +128,7 @@ sources (BigQuery External Tables)
 **Window functions:**
 
 | Column | Function | Purpose |
-|---|---|---|
+ | --- | --- | --- |
 | `rolling_10yr_avg_temp` | `AVG() OVER (ROWS BETWEEN 9 PRECEDING AND CURRENT ROW)` | Smooth annual noise to reveal warming trend |
 | `prev_year_avg_temp` | `LAG()` | Previous year temperature |
 | `yoy_temp_delta` | `avg_temp_mean - LAG()` | Year-over-year temperature change |
@@ -132,6 +142,7 @@ sources (BigQuery External Tables)
 ## dbt Tests
 
 ### Generic tests
+
 ```yaml
 stg_meteo__daily:
  - location_id: not_null
@@ -156,7 +167,7 @@ Custom test:
 ## Dashboard Charts
 
 | Chart | Insight |
-|---|---|
+ | --- | --- |
 | Temperature trend + 10yr rolling average | Warming signal becomes undeniable once annual noise is smoothed |
 | Decade average + 1.5°C flag | Cairo and Dubai crossed threshold in the 2010s — Glasgow has not |
 | Water deficit over time | Glasgow surplus vs Cairo/Dubai chronic deficit worsening over the decades |
@@ -166,7 +177,7 @@ Custom test:
 
 ## Repository Structure
 
-```
+```text
 weather-project-repo/
 ├── models/
 │   ├── staging/
@@ -191,10 +202,43 @@ weather-project-repo/
 ```
 
 ---
+---
+
+### Automated Pipeline Architecture*
+
+---
+
+This repository features an end-to-end, production-grade analytics engineering pipeline built to continuously ingest, transform, and report global weather data for Glasgow, Dubai, and Cairo.
+
+#### Automation & CI/CD
+
+- **Orchestration:** Scheduled via GitHub Actions (`weekly_pipeline.yml`) every Monday at 06:00 UTC.
+
+- **Data Quality:** dbt source freshness tests (8-day warn threshold) and strict integrity tests (`not_null`, `unique`, surrogate key checks).
+
+- **Warehouse Optimization:** Fully compatible with BigQuery Sandbox through DDL table replacement and programmatic partition expiration resets.
+
+```mermaid
+graph TD
+    A["🌐 Open-Meteo Historical API"] --> B["🐍 Python Ingestion Job<br/>(Weekly Rolling 14-Day Batch +<br/> Sandbox Clock Renewal)"]
+    B --> C["📦 Google BigQuery<br/>(Bronze Layer)<br/><code>raw_weather_daily</code>"]
+    C --> D["⚡ dbt Transformation Layer<br/>(Silver & Gold)<br/>• Staging & Deduplication<br/> (<code>qualify row_number</code>)<br/>• Intermediate Dimension Joins<br/>• Fact & Mart Tables"]
+    D --> E["📊 Tableau Public Dashboard<br/>(Interactive Visual Analytics)"]
+
+    style A fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#fff
+    style B fill:#1e3a8a,stroke:#3b82f6,stroke-width:1px,color:#fff
+    style C fill:#065f46,stroke:#10b981,stroke-width:1px,color:#fff
+    style D fill:#7c2d12,stroke:#f97316,stroke-width:1px,color:#fff
+    style E fill:#4c1d95,stroke:#8b5cf6,stroke-width:1px,color:#fff
+```
+
+#### **Additions to the project in SEP 2026*
+
+---
 
 ## Author
 
 **Bassem Sayed** — Senior BI & Analytics Engineer, Cairo  
 [LinkedIn](https://www.linkedin.com/in/bassemsayed/) · [GitHub](https://github.com/bassem-msayed)
 
-*Part of an ongoing analytics engineering portfolio targeting EU AE and BI leadership roles.*
+*Part of an ongoing analytics engineering portfolio targeting EU AE and BI roles.*
