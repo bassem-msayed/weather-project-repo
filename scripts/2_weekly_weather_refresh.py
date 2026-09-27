@@ -62,14 +62,25 @@ def fetch_weekly_weather(city: dict, start_date: str, end_date: str) -> list[dic
     return records
 
 def run_weekly_refresh():
-    if not KEY_PATH:
-        raise ValueError(
-            "[!] GCP_KEY_PATH is not set. Ensure you have defined GCP_KEY_PATH in your .env file."
-        )
-    if not os.path.exists(KEY_PATH):
-        raise FileNotFoundError(
-            f"[!] Service account key file not found at: {KEY_PATH}"
-        )
+    # -------------------------------------------------------------------------
+    # Authentication Setup: Supports both Local (.env) and CI/CD (GitHub Actions)
+    # -------------------------------------------------------------------------
+    if KEY_PATH and os.path.exists(KEY_PATH):
+        print(f"[*] Authenticating using local service account key: {KEY_PATH}")
+        credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
+        client = bigquery.Client(project=GCP_PROJECT_ID, credentials=credentials)
+    elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        print("[*] Authenticating via GOOGLE_APPLICATION_CREDENTIALS environment variable...")
+        client = bigquery.Client(project=GCP_PROJECT_ID)
+    else:
+        try:
+            print("[*] Attempting default application credentials...")
+            client = bigquery.Client(project=GCP_PROJECT_ID)
+        except Exception as e:
+            raise ValueError(
+                "[!] No valid Google Cloud credentials found. "
+                "Set GCP_KEY_PATH in .env (local) or configure GOOGLE_APPLICATION_CREDENTIALS (CI/CD)."
+            ) from e
 
     # Rolling window: past 14 days up to yesterday
     today = datetime.date.today()
@@ -96,9 +107,6 @@ def run_weekly_refresh():
 
     print(f"\n[+] Total rows extracted: {len(df)}")
 
-    # BigQuery Client Initialization
-    credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
-    client = bigquery.Client(project=GCP_PROJECT_ID, credentials=credentials)
     table_ref = f"{GCP_PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
 
     # Append rows to raw landing table

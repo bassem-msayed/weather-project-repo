@@ -80,17 +80,25 @@ def fetch_chunk_with_retry(city: dict, start_date: str, end_date: str, max_retri
     return []
 
 def run_backfill():
-    # Defensive check: Ensure environment variable was supplied and points to an existing file
-    if not KEY_PATH:
-        raise ValueError(
-            "[!] GCP_KEY_PATH is not set. Ensure you have defined GCP_KEY_PATH in your .env file."
-        )
-    if not os.path.exists(KEY_PATH):
-        raise FileNotFoundError(
-            f"[!] Service account key file not found at the path specified in .env: {KEY_PATH}"
-        )
-
-    print(f"[✓] Credentials found via environment variable.")
+    # -------------------------------------------------------------------------
+    # Authentication Setup: Supports both Local (.env) and CI/CD (GitHub Actions)
+    # -------------------------------------------------------------------------
+    if KEY_PATH and os.path.exists(KEY_PATH):
+        print(f"[*] Authenticating using local service account key: {KEY_PATH}")
+        credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
+        client = bigquery.Client(project=GCP_PROJECT_ID, credentials=credentials)
+    elif os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        print("[*] Authenticating via GOOGLE_APPLICATION_CREDENTIALS environment variable...")
+        client = bigquery.Client(project=GCP_PROJECT_ID)
+    else:
+        try:
+            print("[*] Attempting default application credentials...")
+            client = bigquery.Client(project=GCP_PROJECT_ID)
+        except Exception as e:
+            raise ValueError(
+                "[!] No valid Google Cloud credentials found. "
+                "Set GCP_KEY_PATH in .env (local) or configure GOOGLE_APPLICATION_CREDENTIALS (CI/CD)."
+            ) from e
 
     # 10-year chunking window
     end_date_dt = datetime.date.today() - datetime.timedelta(days=5)
@@ -126,10 +134,6 @@ def run_backfill():
         df[col] = pd.to_numeric(df[col], errors="coerce")
 
     print(f"\n[+] Total rows prepared: {len(df):,}")
-
-    # Authenticate via the resolved KEY_PATH
-    credentials = service_account.Credentials.from_service_account_file(KEY_PATH)
-    client = bigquery.Client(project=GCP_PROJECT_ID, credentials=credentials)
     
     table_ref = f"{GCP_PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
     
@@ -156,6 +160,14 @@ def run_backfill():
     table = client.get_table(table_ref)
     print(f"\n[SUCCESS] Table {table_ref} populated!")
     print(f"[SUCCESS] Row Count in BigQuery: {table.num_rows:,} rows.")
+
+    # ==========================================================================
+    # SANDBOX WORKAROUND: Reset table expiration clock
+    # ==========================================================================
+    new_expiration = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=59)
+    table.expires = new_expiration
+    client.update_table(table, ["expires"])
+    print(f"[SUCCESS] BigQuery Sandbox expiration extended to: {new_expiration.strftime('%Y-%m-%d %H:%M:%S UTC')}")
 
 if __name__ == "__main__":
     run_backfill()
